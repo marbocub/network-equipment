@@ -2,6 +2,7 @@
     "name": "marbocub/network-equipment",
     "description": "Telnet client for network equipment",
     "type": "library",
+    "keywords": ["telnet", "client", "cisco", "ios", "router", "switch", "parser", "remote"],
     "license": "MIT",
     "authors": [
         {
