@@ -2,12 +2,12 @@
 
 A Telnet client for network equipment.
 
-This library provide two features are useful for implementing web applications for remotely watching/controlling networking equipment.
+This library provide two features. These are useful for implementing web applications for remotely watching/controlling networking equipment.
 
 * Extends [graze/telnet-client](https://github.com/graze/telnet-client) to provide waitForPrompt(), login(), enable(), configure() and several useful methods
-* The response parser and the parser integrated Telnet client
+* The parser that converts several Cisco IOS command responses to the array
 
-The parser is implemented as the standalone library and as the integrated Telnet client. If you want to use a different Telnet client library, you can use the parser as standalone library.
+The parser is implemented as the standalone library and as the integrated with Telnet client. If you want to use a different Telnet client library, you can use the parser as standalone library.
 
 ## Targetted network equipment
 
@@ -16,7 +16,7 @@ The targetted network equipment of this library are as follows:
 * Cisco IOS
 * Cisco IOS-XE
 
-Methods of Telnet client waitForPrompt() and login() may work with the following network equipment:
+Some basic methods of Telnet client, such as waitForPrompt() and login(), may work with the following network equipment:
 
 * Juniper JUNOS (with custom prompt settings)
 * Linux and other UNIX like platforms (with custom prompt settings)
@@ -31,7 +31,7 @@ Via Composer
 
     composer require marbocub/network-equipment
 
-### Quick start example
+### Quick start example for Telnet client
 
 Once installed, you can use the following example to get and display interface status of Cisco IOS network switch.
 
@@ -161,7 +161,7 @@ The parser is implemented the ability to convert the following Cisco IOS (and co
 
 ## Usage for standalone parser library
 
-### Quick start example
+### Quick start example for standalone parser library
 
     <?php
     require_once("vendor/autoload.php");
