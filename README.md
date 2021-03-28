@@ -43,7 +43,7 @@ Once installed, you can use the following example to get and display interface s
 
     $telnet = TelnetClient::factory();
     try {
-        $telnet->connect("127.0.0.1:23"); // please changes to your target ip address
+        $telnet->connect("127.0.0.1:23");
         $telnet->login("username", "password");
         $telnet->execute("terminal length 0");
 
@@ -169,7 +169,9 @@ The parser is implemented the ability to convert the following Cisco IOS (and co
     use Marbocub\NetworkEquipment\ResponseParser;
 
     /* a command executed and the response returned by your Telnet client */
-    $response = $yourTelnetClient->execute("show int status");
+    $command = "show int status";
+    $response = $yourTelnetClient->execute($command);
+
     echo $response;
 
     /* start parse */
