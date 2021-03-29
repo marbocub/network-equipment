@@ -122,14 +122,14 @@ The following example parse the "show int status" command response getted from a
 
 ### Instantiating a client
 
-TelnetClient::factory() internally instantiates three dependent classes and uses constructor injection.
-
     require_once("vendor/autoload.php");
 
     use Marbocub\NetworkEquipment\TelnetClient;
     use Graze\TelnetClient\Exception\TelnetException;
 
     $telnet = TelnetClient::factory();
+
+* TelnetClient::factory() internally instantiates three dependent classes and uses constructor injection.
 
 ### Connect and Login to the network equipment
 

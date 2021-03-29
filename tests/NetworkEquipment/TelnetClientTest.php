@@ -18,6 +18,7 @@ namespace Marbocub\NetworkEquipment;
 use PHPUnit\Framework\TestCase;
 use Graze\TelnetClient\TelnetResponse;
 use Graze\TelnetClient\TelnetClient as ParentTelnetClient;
+use Socket\Raw\Socket;
 
 class TelnetClientTest extends TestCase
 {
@@ -25,7 +26,7 @@ class TelnetClientTest extends TestCase
 
     protected function setUp(): void
     {
-        $socket = $this->createMock(\Socket\Raw\Socket::class);
+        $socket = $this->createMock(Socket::class);
         $this->client = $this->getMockBuilder(TelnetClient::class)
             ->disableOriginalConstructor()
             ->setMethods(['getResponse', 'execute'])
