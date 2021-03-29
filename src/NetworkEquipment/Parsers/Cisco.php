@@ -21,12 +21,26 @@ trait Cisco
      * Parse the output of 'show interface status'
      * 
      * @param string $input
-     * @param string $lineEnding
      * 
      * @return Array
      */
-    protected function parseShowInterfaceStatus($input, $lineEnding = "\n")
+    protected function parseShowInterfaceStatus($input)
     {
+        $pattern = "/^(\S+)\s+(.*?)\s+(connected|notconnect|suspended|inactive|disabled|err-disabled|monitoring)\s+(\S+)\s+(\S+)\s+(\S+)\s?(.*)?$/";
+        $columns = [
+            'Port',
+            'Name',
+            'Status',
+            'Vlan',
+            'Duplex',
+            'Speed',
+            'Type',
+        ];
+        $keyColumn = 'Port';
+
+        $extracted = $this->extractResultRegex($input, null, "/^Port .*$/", "/^$/");
+        return $this->parseRegexFormat($extracted, $pattern, $columns, $keyColumn, null);
+        /*
         $format = [
             'Port' => [0, 10],
             'Name' => [10, 19],
@@ -38,51 +52,62 @@ trait Cisco
         ];
         $keyColumn = 'Port';
 
-        $extracted = $this->extractResultRegex($input, null, "/^Port .*$/", "/^$/", $lineEnding);
-        return $this->parseFixedFormat($extracted, $format, $keyColumn, null, $lineEnding);
+        $extracted = $this->extractResultRegex($input, null, "/^Port .*$/", "/^$/");
+        return $this->parseFixedFormat($extracted, $format, $keyColumn, null);
+        */
     }
 
     /**
      * Parse the output of 'show interface counters'
      * 
      * @param string $input
-     * @param string $lineEnding
      * 
      * @return Array
      */
-    protected function parseShowInterfaceCounters($input, $lineEnding = "\n")
+    protected function parseShowInterfaceCounters($input)
     {
+        $inStart = "/^Port +InOctets +InUcastPkts +InMcastPkts +InBcastPkts.*$/";
+        $outStart = "/^Port +OutOctets +OutUcastPkts +OutMcastPkts +OutBcastPkts.*$/";
+
+        $in = $this->extractResultRegex($input, null, $inStart, "/^$/");
+        $out = $this->extractResultRegex($input, null, $outStart, "/^$/");
+
         $pattern = "/^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)$/";
-        $columns = [
+        $inColumns = [
             'Port',
-            'Octets',
-            'UcastPkts',
-            'McastPkts',
-            'BcastPkts',
+            'InOctets',
+            'InUcastPkts',
+            'InMcastPkts',
+            'InBcastPkts',
+        ];
+        $outColumns = [
+            'Port',
+            'OutOctets',
+            'OutUcastPkts',
+            'OutMcastPkts',
+            'OutBcastPkts',
         ];
         $keyColumn = 'Port';
 
-        $isValidFunc = function($line, $keyValue) {
-            if (strlen($line) >= 69 && $keyValue !== 'Port') {
-                return true;
-            }
-            return false;
-        };
-
-        $parsed = $this->parseRegexFormat($input, $pattern, $columns, $keyColumn, $isValidFunc, $lineEnding);
-
-        return !empty($parsed) ? ['In' => $parsed[0], 'Out' => $parsed[1]] : null;
+        $inParsed = $this->parseRegexFormat($in, $pattern, $inColumns, $keyColumn, null);
+        $outParsed = $this->parseRegexFormat($out, $pattern, $outColumns, $keyColumn, null);
+        if (!is_array($outParsed)) {
+            $outParsed = [];
+        }
+        array_walk($outParsed, function(&$port, $key) {
+            unset($port['Port']);
+        });
+        return is_array($inParsed) ? array_merge_recursive($inParsed, $outParsed) : null;
     }
 
     /**
      * Parse the output of 'show mac address-table'
      * 
      * @param string $input
-     * @param string $lineEnding
      * 
      * @return Array
      */
-    protected function parseShowMacAddressTable($input, $lineEnding = "\n")
+    protected function parseShowMacAddressTable($input)
     {
         $format = [
             'Vlan' => [0, 8],
@@ -92,19 +117,18 @@ trait Cisco
         ];
         $keyColumns = ['Vlan', 'Mac Address'];
 
-        $extracted = $this->extractResultRegex($input, null, "/^----    ----.*$/", "/^Total Mac Addresses .*$/", $lineEnding);
-        return $this->parseFixedFormat($extracted, $format, $keyColumns, null, $lineEnding);
+        $extracted = $this->extractResultRegex($input, null, "/^----    ----.*$/", "/^Total Mac Addresses .*$/");
+        return $this->parseFixedFormat($extracted, $format, $keyColumns, null);
     }
 
     /**
      * Parse the output of 'show lldp neighbors'
      * 
      * @param string $input
-     * @param string $lineEnding
      * 
      * @return Array
      */
-    protected function parseShowLldpNeighbors($input, $lineEnding = "\n")
+    protected function parseShowLldpNeighbors($input)
     {
         $format = [
             'Device ID' => [0, 20],
@@ -115,19 +139,18 @@ trait Cisco
         ];
         $keyColumn = 'Local Intf';
 
-        $extracted = $this->extractResultRegex($input, null, "/^Device ID .*$/", "/^$/", $lineEnding);
-        return $this->parseFixedFormat($extracted, $format, $keyColumn, null, $lineEnding);
+        $extracted = $this->extractResultRegex($input, null, "/^Device ID .*$/", "/^$/");
+        return $this->parseFixedFormat($extracted, $format, $keyColumn, null);
     }
 
     /**
      * Parse the output of 'show ip interface brief'
      * 
      * @param string $input
-     * @param string $lineEnding
      * 
      * @return Array
      */
-    protected function parseShowIpInterfaceBrief($input, $lineEnding = "\n")
+    protected function parseShowIpInterfaceBrief($input)
     {
         $format = [
             'Interface' => [0, 23],
@@ -139,19 +162,18 @@ trait Cisco
         ];
         $keyColumn = 'Interface';
 
-        $extracted = $this->extractResultRegex($input, null, "/^Interface .*$/", "/^$/", $lineEnding);
-        return $this->parseFixedFormat($extracted, $format, $keyColumn, null, $lineEnding);
+        $extracted = $this->extractResultRegex($input, null, "/^Interface .*$/", "/^$/");
+        return $this->parseFixedFormat($extracted, $format, $keyColumn, null);
     }
 
     /**
      * Parse the output of 'show arp'
      * 
      * @param string $input
-     * @param string $lineEnding
      * 
      * @return Array
      */
-    protected function parseShowArp($input, $lineEnding = "\n")
+    protected function parseShowArp($input)
     {
         $format = [
             'Protocol' => [0, 10],
@@ -163,8 +185,20 @@ trait Cisco
         ];
         $keyColumn = 'Address';
 
-        $extracted = $this->extractResultRegex($input, null, "/^Protocol .*$/", "/^$/", $lineEnding);
-        return $this->parseFixedFormat($extracted, $format, $keyColumn, null, $lineEnding);
+        $extracted = $this->extractResultRegex($input, null, "/^Protocol .*$/", "/^$/");
+        return $this->parseFixedFormat($extracted, $format, $keyColumn, null);
+    }
+
+    /**
+     * Split lines by line ending
+     * 
+     * @param string $input
+     * 
+     * @return Array
+     */
+    protected function splitlines($input)
+    {
+        return explode("\n", str_replace(["\r\n", "\r", "\n"], "\n", $input));
     }
 
     /**
@@ -174,17 +208,14 @@ trait Cisco
      * @param string $startPattern
      * @param string $nextPattern
      * @param string $endPattern
-     * @param string $lineEnding
      * 
      * @return string
      */
-    protected function extractResultRegex(
-        $input, $startPattern, $nextPattern, $endPattern,
-        $lineEnding = "\n")
+    protected function extractResultRegex($input, $startPattern, $nextPattern, $endPattern)
     {
         $flag = false;
         $next = false;
-        foreach (explode($lineEnding, $input) as $line) {
+        foreach ($this->splitlines($input) as $line) {
             if (!empty($startPattern) && preg_match($startPattern, $line)) {
                 $flag = true;
             }
@@ -204,7 +235,7 @@ trait Cisco
             }
         }
 
-        return isset($extracted) ? implode($lineEnding, $extracted) : null;
+        return isset($extracted) ? implode("\n", $extracted) : null;
     }
 
     /**
@@ -214,14 +245,12 @@ trait Cisco
      * @param array $format
      * @param string $keyName
      * @param callable $isValidFunc
-     * @param string $lineEnding
      * 
      * @return array
      */
     protected function parseFixedFormat(
         $input, $format, $keyNames,
-        callable $isValidFunc = null,
-        $lineEnding = "\n")
+        callable $isValidFunc = null)
     {
         $matcher = function($line) use ($format) {
             foreach ($format as $name=>$subformat) {
@@ -233,7 +262,7 @@ trait Cisco
             return $result;
         };
 
-        return $this->parseWithUserMatcher($input, $matcher, $keyNames, $isValidFunc, $lineEnding);
+        return $this->parseWithUserMatcher($input, $matcher, $keyNames, $isValidFunc);
     }
 
     /**
@@ -244,24 +273,22 @@ trait Cisco
      * @param array $keys,
      * @param string $keyName
      * @param callable $isValidFunc
-     * @param string $lineEnding
      * 
      * @return array
      */
     protected function parseRegexFormat(
         $input, $pattern, $columns, $keyColumns,
-        callable $isValidFunc = null,
-        $lineEnding = "\n")
+        callable $isValidFunc = null)
     {
         $matcher = function($line) use ($pattern, $columns) {
-            if (preg_match($pattern, $line, $matches)) {
+            if (preg_match($pattern, trim($line), $matches)) {
                 unset($matches[0]);
                 return array_combine($columns, $matches);
             }
             return null;
         };
 
-        return $this->parseWithUserMatcher($input, $matcher, $keyColumns, $isValidFunc, $lineEnding);
+        return $this->parseWithUserMatcher($input, $matcher, $keyColumns, $isValidFunc);
     }
 
     /**
@@ -271,7 +298,6 @@ trait Cisco
      * @param callable $matcher
      * @param string $keyColumns
      * @param callable $isValidFunc
-     * @param string $lineEnding
      * 
      * @return array
      */
@@ -279,10 +305,9 @@ trait Cisco
         $input,
         callable $matcher,
         $keyColumns = null,
-        callable $isValidFunc = null,
-        $lineEnding = "\n")
+        callable $isValidFunc = null)
     {
-        foreach (explode($lineEnding, $input) as $line) {
+        foreach ($this->splitlines($input) as $line) {
             if (strlen($line) === 0) {
                 continue;
             }

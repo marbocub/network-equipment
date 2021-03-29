@@ -66,6 +66,6 @@ class ParsedResponse extends TelnetResponse
      */
     protected function buildResponseArray()
     {
-        return $this->parser->parse($this->command, $this->responseText, "\n");
+        return $this->parser->parse($this->command, $this->responseText);
     }
 }

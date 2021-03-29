@@ -55,7 +55,7 @@ class ResponseParserTest extends TestCase
             ."\n"
             ."Port      Name               Status       Vlan       Duplex  Speed Type\n"
             ."Te1/0/1   description        connected    trunk        full    10G SFP-10GBase-SR\n"
-            ."Gi0/1     loooong descriptionerr-disabled 2            auto a-1000 10/100/1000BaseTX\n"
+            ."Gi0/1     looong description err-disabled 2            auto a-1000 10/100/1000BaseTX\n"
             ."Po1                          connected    trunk      a-full a-1000 \n"
             ."\n"
         ;
@@ -71,7 +71,7 @@ class ResponseParserTest extends TestCase
             ],
             "Gi0/1" => [
                 'Port' => 'Gi0/1',
-                'Name' => 'loooong description',
+                'Name' => 'looong description',
                 'Status' => 'err-disabled',
                 'Vlan' => '2',
                 'Duplex' => 'auto',
@@ -117,38 +117,27 @@ class ResponseParserTest extends TestCase
             ."\n"
         ;
         $correct = [
-            'In' => [
-                "Gi0/1" => [
-                    'Port' => 'Gi0/1',
-                    'Octets' => '1024',
-                    'UcastPkts' => '64',
-                    'McastPkts' => '32',
-                    'BcastPkts' => '16',
-                ],
-                "Po1" => [
-                    'Port' => 'Po1',
-                    'Octets' => '12345678901234',
-                    'UcastPkts' => '11223344556677',
-                    'McastPkts' => '12312312312312',
-                    'BcastPkts' => '67890123456789',
-                ],
-    
+            "Gi0/1" => [
+                'Port' => 'Gi0/1',
+                'InOctets' => '1024',
+                'InUcastPkts' => '64',
+                'InMcastPkts' => '32',
+                'InBcastPkts' => '16',
+                'OutOctets' => '2048',
+                'OutUcastPkts' => '512',
+                'OutMcastPkts' => '256',
+                'OutBcastPkts' => '128',
             ],
-            'Out' => [
-                "Gi0/1" => [
-                    'Port' => 'Gi0/1',
-                    'Octets' => '2048',
-                    'UcastPkts' => '512',
-                    'McastPkts' => '256',
-                    'BcastPkts' => '128',
-                ],
-                "Po1" => [
-                    'Port' => 'Po1',
-                    'Octets' => '43210987654321',
-                    'UcastPkts' => '77665544332211',
-                    'McastPkts' => '21321321321321',
-                    'BcastPkts' => '98765432109876',
-                ],
+            "Po1" => [
+                'Port' => 'Po1',
+                'InOctets' => '12345678901234',
+                'InUcastPkts' => '11223344556677',
+                'InMcastPkts' => '12312312312312',
+                'InBcastPkts' => '67890123456789',
+                'OutOctets' => '43210987654321',
+                'OutUcastPkts' => '77665544332211',
+                'OutMcastPkts' => '21321321321321',
+                'OutBcastPkts' => '98765432109876',
             ],
         ];
         $this->assertEquals($correct, $parser->parse($command, $input, "\n"));
