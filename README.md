@@ -1,27 +1,36 @@
 # marbocub/network-equipment
 
-A Telnet client for network equipment.
+A telnet client with response parser for network equipment written in PHP.
 
-This library provide two features. These are useful for implementing web applications for remotely watching/controlling networking equipment.
+This library provide two features.
 
-* Extends [graze/telnet-client](https://github.com/graze/telnet-client) to provide waitForPrompt(), login(), enable(), configure() and several useful methods
-* The parser that converts several Cisco IOS command responses to the array
+* Telnet client that extends [graze/telnet-client](https://github.com/graze/telnet-client) to provide waitForPrompt(), login(), enable(), configure() and several useful methods
+* The parser that converts several supported Cisco IOS command responses to the array
 
-The parser is implemented as the standalone library and as the integrated with Telnet client. If you want to use a different Telnet client library, you can use the parser as standalone library.
+The parser is implemented as the standalone library and as the integrated with telnet client. If you want to use a different telnet/SSH client library, you can use the parser as standalone library.
 
-## Targetted network equipment
+## Supported network equipment
 
-The targetted network equipment of this library are as follows:
+The supported network equipment of the parser and the telnet client are as follows:
 
 * Cisco IOS
 * Cisco IOS-XE
 
-Some basic methods of Telnet client, such as waitForPrompt() and login(), may work with the following network equipment:
+Telnet client may work with targeted the following network equipment:
 
 * Juniper JUNOS (with custom prompt settings)
 * Linux and other UNIX like platforms (with custom prompt settings)
 * Alaxala network switch
 * Extreme XOS, HP Procurve, DLink and other intelligent network switch
+
+## Supported Cisco IOS command by the parser
+
+* show interface status
+* show interface counters
+* show mac address-table
+* show lldp neighbors
+* show ip interface brief
+* show arp
 
 ## Getting Started
 
@@ -31,9 +40,9 @@ Via Composer
 
     composer require marbocub/network-equipment
 
-### Quick start example for Telnet client
+### Quick start example for telnet client
 
-Once installed, you can use the following example to get and display interface status of Cisco IOS network switch.
+The following example login to a Cisco IOS switch to get and display the interface status:
 
     <?php
     require_once("vendor/autoload.php");
@@ -48,6 +57,7 @@ Once installed, you can use the following example to get and display interface s
         $telnet->execute("terminal length 0");
 
         $response = $telnet->execute("show interface status");
+
         echo $response;
         print_r($response->getResponseArray());
 
@@ -56,7 +66,28 @@ Once installed, you can use the following example to get and display interface s
         die();
     }
 
-Example of the result:
+### Quick start example for standalone parser library
+
+The following example parse the "show int status" command response getted from a Cisco IOS switch:
+
+    <?php
+    require_once("vendor/autoload.php");
+
+    use Marbocub\NetworkEquipment\ResponseParser;
+
+    /* executed command and the response */
+    $command = "show int status";
+    $response = $yourSSHClient->execute($command);
+
+    echo $response;
+
+    /* start parse */
+    $parser = new ResponseParser();
+    $result = $parser->parse($command, $response);
+
+    print_r($result);
+
+### The result of both examples:
 
     Port      Name               Status       Vlan       Duplex  Speed Type
     Te1/0/1   description        connected    trunk        full    10G SFP-10GBase-SR
@@ -87,10 +118,9 @@ Example of the result:
             )
     )
 
-
 ## Usage for Telnet Client
 
-### Create a instance
+### Instantiating a client
 
     require_once("vendor/autoload.php");
 
@@ -109,7 +139,7 @@ Example of the result:
         /* failed */
     }
 
-### Execute commands and parse the response
+### Execute command and parse the response
 
     $telnet->execute("terminal length 0");
 
@@ -121,6 +151,9 @@ Example of the result:
     // Getting the parsed array
     print_r($response->getResponseArray());
 
++ Must be execute "terminal length 0" first for Cisco IOS.
++ getResponseArray() calls the parser. Only works well with supported Cisco IOS command executed.
+
 ### Turn on privileged mode for Cisco IOS
 
     try {
@@ -130,6 +163,8 @@ Example of the result:
     }
 
 ### Batch execute Cisco IOS configure commands (privileged mode must be turned on)
+
+The first argument of the configure() is an array listing the commands to execute.
 
     $commands = [
         'interface Gi1/0/1',
@@ -148,72 +183,28 @@ For Juniper JUNOS and Linux or other UNIX platforms, you can use the following r
 
     $telnet->setPrompt("\S+[>#%\$]\s?");
 
-## Parser
+## Usage for Parser
 
-The parser is implemented the ability to convert the following Cisco IOS (and compatible) command responses to the array.
+### Instantiating a parser
 
-* show interface status
-* show interface counters
-* show mac address-table
-* show lldp neighbors
-* show ip interface brief
-* show arp
-
-## Usage for standalone parser library
-
-### Quick start example for standalone parser library
-
-    <?php
     require_once("vendor/autoload.php");
 
     use Marbocub\NetworkEquipment\ResponseParser;
 
-    /* a command executed and the response returned by your Telnet client */
-    $command = "show int status";
-    $response = $yourTelnetClient->execute($command);
-
-    echo $response;
-
-    /* start parse */
     $parser = new ResponseParser();
-    $result = $parser->parse($command, $response, "\n");
 
-    print_r($result);
+### Parse the command response
 
-Example of the result:
+The first argument is the executed Cisco IOS command. Required for the parser to select the format.
 
-    Port      Name               Status       Vlan       Duplex  Speed Type
-    Te1/0/1   description        connected    trunk        full    10G SFP-10GBase-SR
-    Po1                          connected    trunk      a-full a-1000 
-
-    Array
-    (
-        [Te1/0/1] => Array
-            (
-                [Port] => 'Te1/0/1',
-                [Name] => 'description',
-                [Status] => 'connected',
-                [Vlan] => 'trunk',
-                [Duplex] => 'full',
-                [Speed] => '10G',
-                [Type] => 'SFP-10GBase-SR',
-            )
-
-        [Po1] => Array
-            (
-                [Port] => 'Po1',
-                [Name] => '',
-                [Status] => 'connected',
-                [Vlan] => 'trunk',
-                [Duplex] => 'a-full',
-                [Speed] => 'a-1000',
-                [Type] => '',
-            )
-    )
+    $result = $parser->parse(
+                  "executed command",
+                  "response text"
+              );
 
 ## Limitations
 
-Telnet Client of this library requires the PHP's low-level sockets extension (ext-sockets) for the underlying library.
+Telnet client of this library requires the PHP's low-level sockets extension (ext-sockets) for the underlying library.
 
 ## Authors
 
