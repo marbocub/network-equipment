@@ -5,13 +5,13 @@ A telnet client with response parser for network equipment written in PHP.
 This library provide two features.
 
 * Telnet client that extends [graze/telnet-client](https://github.com/graze/telnet-client) to provide waitForPrompt(), login(), enable(), configure() and several useful methods
-* The parser that converts several supported Cisco IOS command responses to the array
+* The parser that converts a supported Cisco IOS command response to the array
 
-The parser is implemented as the standalone library and as the integrated with telnet client. If you want to use a different telnet/SSH client library, you can use the parser as standalone library.
+The parser is implemented as the integrated with telnet client and as the standalone library. If you want to use your own telnet/SSH client library, you can use the parser as standalone library.
 
 ## Supported network equipment
 
-The supported network equipment of the parser and the telnet client are as follows:
+Supported network equipment by the parser and the telnet client are as follows:
 
 * Cisco IOS
 * Cisco IOS-XE
@@ -23,7 +23,7 @@ Telnet client may work with targeted the following network equipment:
 * Alaxala network switch
 * Extreme XOS, HP Procurve, DLink and other intelligent network switch
 
-## Supported Cisco IOS command by the parser
+## Supported Cisco IOS commands by the parser
 
 * show interface status
 * show interface counters
@@ -122,6 +122,8 @@ The following example parse the "show int status" command response getted from a
 
 ### Instantiating a client
 
+TelnetClient::factory() internally instantiates three dependent classes and uses constructor injection.
+
     require_once("vendor/autoload.php");
 
     use Marbocub\NetworkEquipment\TelnetClient;
@@ -129,7 +131,7 @@ The following example parse the "show int status" command response getted from a
 
     $telnet = TelnetClient::factory();
 
-### Connect and Login the network equipment
+### Connect and Login to the network equipment
 
     $telnet->connect("127.0.0.1:23");
 
@@ -195,7 +197,7 @@ For Juniper JUNOS and Linux or other UNIX platforms, you can use the following r
 
 ### Parse the command response
 
-The first argument is the executed Cisco IOS command. Required for the parser to select the format.
+The first argument of parse() is the executed Cisco IOS command. Required for the parser to select the format.
 
     $result = $parser->parse(
                   "executed command",
