@@ -181,9 +181,22 @@ The first argument of the configure() is an array listing the commands to execut
 
 ### Custom prompt setting
 
-For Juniper JUNOS and Linux or other UNIX platforms, you can use the following regex prompt.
+You can specify the following regex prompt at the 2nd argument of connect().
 
-    $telnet->setPrompt("\S+[>#%\$]\s?");
+* For Juniper JUNOS
+    ~~~
+    $telnet->connect("127.0.0.1:23', "((?<username>\S+?)\@)?(?<hostname>\S+?)[%>#]\s?");
+    ~~~
+
+* For Linux or other UNIX platforms
+    ~~~
+    $telnet->connect("127.0.0.1:23', "((?<username>\S+?)\@)?(?<hostname>\S+?)(:(?<path>.+))?[#\$]\s?");
+    ~~~
+
+* Default regex prompt when not specified
+    ~~~
+    "((?<username>\S+?)\@)?(?<hostname>\S+?)(\((?<mode>.+)\))?[>#]\s?"
+    ~~~
 
 ## Usage for Parser
 

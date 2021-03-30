@@ -35,7 +35,7 @@ class TelnetClient extends ParentTelnetClient
      */
     public function connect(
         $dsn = '127.0.0.1:23',
-        $prompt = "\S+[>#]\s?",
+        $prompt = "((?<username>\S+?)\@)?(?<hostname>\S+?)(\((?<mode>.+)\))?[>#]\s?",
         $promptError = "(([uU]ser[nN]ame|[lL]og[iI]n|[pP]ass[wW]ord):\s?|% (Login invalid|Bad passwords|Bad secrets))",
         $lineEnding = "\r\n",
         $timeout = 10)

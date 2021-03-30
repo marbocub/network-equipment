@@ -32,7 +32,7 @@ class TelnetClientTest extends TestCase
             ->setMethods(['getResponse', 'execute'])
             ->getMock();
         $this->client->setSocket($socket);
-        $this->client->setPrompt("\S+[>#]\s?");
+        $this->client->setPrompt("((?<username>\S+?)\@)?(?<hostname>\S+?)(\((?<mode>.+)\))?[>#]\s?");
         $this->client->setPromptError("(([uU]ser[nN]ame|[lL]og[iI]n|[pP]ass[wW]ord):\s?|% (Login invalid|Bad passwords|Bad secrets))");
     }
 
