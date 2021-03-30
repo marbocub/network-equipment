@@ -26,20 +26,12 @@ trait Cisco
      */
     protected function parseShowInterfaceStatus($input)
     {
-        $pattern = "/^(\S+)\s+(.*?)\s+(connected|notconnect|suspended|inactive|disabled|err-disabled|monitoring)\s+(\S+)\s+(\S+)\s+(\S+)\s?(.*)?$/";
-        $columns = [
-            'Port',
-            'Name',
-            'Status',
-            'Vlan',
-            'Duplex',
-            'Speed',
-            'Type',
-        ];
+        $pattern = "/^(?<Port>\S+)\s+(?<Name>.*?)\s+(?<Status>connected|notconnect|suspended|inactive|disabled|err-disabled|monitoring)\s+(?<Vlan>\S+)\s+(?<Duplex>\S+)\s+(?<Speed>\S+)\s?(?<Type>.*)?$/";
         $keyColumn = 'Port';
 
         $extracted = $this->extractResultRegex($input, null, "/^Port .*$/", "/^$/");
-        return $this->parseRegexFormat($extracted, $pattern, $columns, $keyColumn, null);
+        return $this->parseRegexFormat($extracted, $pattern, $keyColumn, null);
+
         /*
         $format = [
             'Port' => [0, 10],
@@ -72,25 +64,12 @@ trait Cisco
         $in = $this->extractResultRegex($input, null, $inStart, "/^$/");
         $out = $this->extractResultRegex($input, null, $outStart, "/^$/");
 
-        $pattern = "/^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)$/";
-        $inColumns = [
-            'Port',
-            'InOctets',
-            'InUcastPkts',
-            'InMcastPkts',
-            'InBcastPkts',
-        ];
-        $outColumns = [
-            'Port',
-            'OutOctets',
-            'OutUcastPkts',
-            'OutMcastPkts',
-            'OutBcastPkts',
-        ];
+        $inPattern = "/^(?<Port>\S+)\s+(?<InOctets>\S+)\s+(?<InUcastPkts>\S+)\s+(?<InMcastPkts>\S+)\s+(?<InBcastPkts>\S+)$/";
+        $outPattern = "/^(?<Port>\S+)\s+(?<OutOctets>\S+)\s+(?<OutUcastPkts>\S+)\s+(?<OutMcastPkts>\S+)\s+(?<OutBcastPkts>\S+)$/";
         $keyColumn = 'Port';
 
-        $inParsed = $this->parseRegexFormat($in, $pattern, $inColumns, $keyColumn, null);
-        $outParsed = $this->parseRegexFormat($out, $pattern, $outColumns, $keyColumn, null);
+        $inParsed = $this->parseRegexFormat($in, $inPattern, $keyColumn, null);
+        $outParsed = $this->parseRegexFormat($out, $outPattern, $keyColumn, null);
         if (!is_array($outParsed)) {
             $outParsed = [];
         }
@@ -270,22 +249,31 @@ trait Cisco
      * 
      * @param string $input
      * @param string $pattern
-     * @param array $keys,
      * @param string $keyName
      * @param callable $isValidFunc
      * 
      * @return array
      */
     protected function parseRegexFormat(
-        $input, $pattern, $columns, $keyColumns,
+        $input, $pattern, $keyColumns,
         callable $isValidFunc = null)
     {
-        $matcher = function($line) use ($pattern, $columns) {
-            if (preg_match($pattern, trim($line), $matches)) {
+        $matcher = function($line) use ($pattern) {
+            if (preg_match($pattern, $line, $matches)) {
                 unset($matches[0]);
-                return array_combine($columns, $matches);
+                if (array_values($matches) === $matches) {
+                    return $matches;
+                } else {
+                    $len = count($matches);
+                    for ($i=1; $i<$len; $i++) {
+                        if (isset($matches[$i])) {
+                            unset($matches[$i]);
+                        }
+                    }
+                }
+                return $matches;
             }
-            return null;
+            return $line;
         };
 
         return $this->parseWithUserMatcher($input, $matcher, $keyColumns, $isValidFunc);
