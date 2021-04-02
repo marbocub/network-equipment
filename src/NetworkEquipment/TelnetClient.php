@@ -22,6 +22,11 @@ use Graze\TelnetClient\Exception\TelnetException;
 
 class TelnetClient extends ParentTelnetClient
 {
+    const PROMPT_CISCO = "((?<username>\S+?)\@)?(?<hostname>\S+?)(\((?<mode>.+)\))?[>#]\s?";
+    const PROMPT_JUNOS = "((?<username>\S+?)\@)?(?<hostname>\S+?)[%>#]\s?";
+    const PROMPT_SHELL = "((?<username>\S+?)\@)?(?<hostname>\S+?)(:(?<path>.+))?[#\$]\s?";
+    const PROMPT_ERROR = "(([uU]ser[nN]ame|[lL]og[iI]n|[pP]ass[wW]ord):\s?|% (Login invalid|Bad passwords|Bad secrets))";
+
     /**
      * Connect the network equipment
      * 
@@ -35,8 +40,8 @@ class TelnetClient extends ParentTelnetClient
      */
     public function connect(
         $dsn = '127.0.0.1:23',
-        $prompt = "((?<username>\S+?)\@)?(?<hostname>\S+?)(\((?<mode>.+)\))?[>#]\s?",
-        $promptError = "(([uU]ser[nN]ame|[lL]og[iI]n|[pP]ass[wW]ord):\s?|% (Login invalid|Bad passwords|Bad secrets))",
+        $prompt = self::PROMPT_CISCO,
+        $promptError = self::PROMPT_ERROR,
         $lineEnding = "\r\n",
         $timeout = 10)
     {

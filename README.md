@@ -4,8 +4,8 @@ A telnet client with response parser for network equipment written in PHP.
 
 This library provide two features.
 
-* Telnet client that extends [graze/telnet-client](https://github.com/graze/telnet-client) to provide waitForPrompt(), login(), enable(), configure() and several useful presets
-* The parser that converts a supported Cisco IOS command response to the array
+* Telnet client, that extends [graze/telnet-client](https://github.com/graze/telnet-client) to provide waitForPrompt(), login(), enable(), configure() and several presets for network equipment
+* The parser, that converts a supported Cisco IOS command response to the array
 
 The parser is implemented as the integrated with telnet client and as the standalone library. If you want to use your own telnet/SSH client library, you can use the parser as standalone library.
 
@@ -18,8 +18,8 @@ Supported network equipment by the parser and the telnet client are:
 
 Telnet client may work with targeted are:
 
-* Juniper JUNOS (with custom prompt settings)
-* Linux and other UNIX like platforms (with custom prompt settings)
+* Juniper JUNOS (with [custom prompt setting](#custom-prompt-setting))
+* Linux and other UNIX like platforms (with [custom prompt setting](#custom-prompt-setting))
 * Alaxala network switch
 * Extreme XOS, HP Procurve, DLink and other intelligent network switch
 
@@ -130,6 +130,8 @@ Array
 
 ### Instantiating a client
 
+To instantiation a client, use the TelnetClient::factory() that return a TelnetClient instance:
+
 ``` php
 require_once("vendor/autoload.php");
 
@@ -139,32 +141,42 @@ use Graze\TelnetClient\Exception\TelnetException;
 $telnet = TelnetClient::factory();
 ```
 
-**Note:** TelnetClient::factory() internally instantiates three dependent classes and uses constructor injection.
+**Note:** The factory() internally instantiates three dependent classes and uses constructor injection.
 
 ### Connect and Login to the network equipment
 
-``` php
-$telnet->connect("127.0.0.1:23");
+To login a network equipment, use the connect() method to create a socket first and then use the login() method:
 
+``` php
 try {
+    $telnet->connect("127.0.0.1:23");
     $telnet->login("username", "password");
 } catch (TelnetException $e) {
     /* failed */
 }
 ```
 
+**Note:** The difference of connect() between this library and the [graze/telnet-client](https://github.com/graze/telnet-client) is the preset prompts for Cisco IOS.
+
 ### Execute command and parse the response
 
+Once connected, the execute() method can be used to write command to the socket and receive the response:
+
 ``` php
-$telnet->execute("terminal length 0");
+try {
+    $telnet->execute("terminal length 0");
 
-$response = $telnet->execute("show interface status");
+    $response = $telnet->execute("show interface status");
 
-// Getting the response text
-echo $response;
+    // Getting the response text
+    echo $response;
 
-// Getting the parsed array
-print_r($response->getResponseArray());
+    // Getting the parsed array
+    print_r($response->getResponseArray());
+
+} catch (TelnetException $e) {
+    /* failed */
+}
 ```
 
 **Note:** Must be execute "terminal length 0" first for Cisco IOS.
@@ -172,6 +184,8 @@ print_r($response->getResponseArray());
 **Note:** getResponseArray() calls the parser. Only works well with supported Cisco IOS command executed.
 
 ### Turn on privileged mode for Cisco IOS
+
+To enable privileged mode for Cisco IOS, the enable() method can be used:
 
 ``` php
 try {
@@ -182,6 +196,8 @@ try {
 ```
 
 ### Batch execute Cisco IOS configure commands (privileged mode must be turned on)
+
+To configure Cisco IOS, the configure() method can be used:
 
 ``` php
 $commands = [
@@ -196,27 +212,21 @@ try {
 }
 ```
 
-**Note:**The first argument of the configure() is an array listing the commands to execute.
+**Note:** The first argument of the configure() is an array listing the commands to execute.
 
 ### Custom prompt setting
 
-You can specify the following regex prompt at the 2nd argument of connect().
+You can specify the following prompt constant at the 2nd argument of connect().
 
 * For Juniper JUNOS
     ``` php
-    $telnet->connect("127.0.0.1:23', "((?<username>\S+?)\@)?(?<hostname>\S+?)[%>#]\s?");
+    $telnet->connect("127.0.0.1:23', TelnetClient::PROMPT_JUNOS);
     ```
 
 * For Linux or other UNIX platforms
     ``` php
-    $telnet->connect("127.0.0.1:23', "((?<username>\S+?)\@)?(?<hostname>\S+?)(:(?<path>.+))?[#\$]\s?");
+    $telnet->connect("127.0.0.1:23', TelnetClient::PROMPT_SHELL);
     ```
-
-**note:** Default regex prompt when not specified:
-
-``` php
-"((?<username>\S+?)\@)?(?<hostname>\S+?)(\((?<mode>.+)\))?[>#]\s?"
-```
 
 ## Usage for Parser
 
