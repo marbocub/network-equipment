@@ -31,22 +31,6 @@ trait Cisco
 
         $extracted = $this->extractResultRegex($input, null, "/^Port .*$/", "/^$/");
         return $this->parseRegexFormat($extracted, $pattern, $keyColumn, null);
-
-        /*
-        $format = [
-            'Port' => [0, 10],
-            'Name' => [10, 19],
-            'Status' => [29, 13],
-            'Vlan' => [42, 5],
-            'Duplex' => [48, 11],
-            'Speed' => [59, 7],
-            'Type' => [67],
-        ];
-        $keyColumn = 'Port';
-
-        $extracted = $this->extractResultRegex($input, null, "/^Port .*$/", "/^$/");
-        return $this->parseFixedFormat($extracted, $format, $keyColumn, null);
-        */
     }
 
     /**
