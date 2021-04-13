@@ -43,7 +43,7 @@ Telnet client may work with targeted are:
 
 Via Composer
 
-``` bash
+```bash
 composer require marbocub/network-equipment
 ```
 
@@ -52,7 +52,7 @@ composer require marbocub/network-equipment
 The following example login to a Cisco IOS switch
 to get and display the interface status:
 
-``` php
+```php
 <?php
 require_once("vendor/autoload.php");
 
@@ -81,7 +81,7 @@ try {
 The following example parse the "show int status" command response
 getted from a Cisco IOS switch:
 
-``` php
+```php
 <?php
 require_once("vendor/autoload.php");
 
@@ -104,7 +104,7 @@ print_r($result);
 
 The result of both examples is:
 
-``` php
+```text
 Port      Name               Status       Vlan       Duplex  Speed Type
 Te1/0/1   description        connected    trunk        full    10G SFP-10GBase-SR
 Po1                          connected    trunk      a-full a-1000 
@@ -142,7 +142,7 @@ Array
 To instantiation a client,
 use the TelnetClient::factory() that return a TelnetClient instance:
 
-``` php
+```php
 require_once("vendor/autoload.php");
 
 use Marbocub\NetworkEquipment\TelnetClient;
@@ -151,16 +151,12 @@ use Graze\TelnetClient\Exception\TelnetException;
 $telnet = TelnetClient::factory();
 ```
 
-**Note:**
-The factory() internally instantiates three dependent classes
-and uses constructor injection.
-
 ### Connect and Login to the network equipment
 
 To login a network equipment,
 use the connect() method to create a socket first and then use the login() method:
 
-``` php
+```php
 try {
     $telnet->connect("127.0.0.1:23");
     $telnet->login("username", "password");
@@ -179,7 +175,7 @@ is the preset prompts for Cisco IOS.
 Once connected,
 the execute() method can be used to write command to the socket and receive the response:
 
-``` php
+```php
 try {
     $telnet->execute("terminal length 0");
 
@@ -200,14 +196,14 @@ try {
 Must be execute "terminal length 0" first for Cisco IOS.
 
 **Note:**
-getResponseArray() calls the parser.
+getResponseArray() calls the parser internally.
 Only works well with supported Cisco IOS command executed.
 
 ### Turn on privileged mode for Cisco IOS
 
 To enable privileged mode for Cisco IOS, the enable() method can be used:
 
-``` php
+```php
 try {
     $telnet->enable("password");
 } catch (TelnetException $e) {
@@ -219,7 +215,7 @@ try {
 
 To configure Cisco IOS, the configure() method can be used:
 
-``` php
+```php
 $commands = [
     'interface Gi1/0/1',
     'switchport access vlan 100',
@@ -241,21 +237,21 @@ You can specify the following prompt constant at the 2nd argument of connect().
 
 * For Juniper JUNOS
 
-    ``` php
-    $telnet->connect("127.0.0.1:23', TelnetClient::PROMPT_JUNOS);
-    ```
+```php
+$telnet->connect("127.0.0.1:23', TelnetClient::PROMPT_JUNOS);
+```
 
 * For Linux or other UNIX platforms
 
-    ``` php
-    $telnet->connect("127.0.0.1:23', TelnetClient::PROMPT_SHELL);
-    ```
+```php
+$telnet->connect("127.0.0.1:23', TelnetClient::PROMPT_SHELL);
+```
 
 ## Usage for Parser
 
 ### Instantiating a parser
 
-``` php
+```php
 require_once("vendor/autoload.php");
 
 use Marbocub\NetworkEquipment\ResponseParser;
@@ -268,7 +264,7 @@ $parser = new ResponseParser();
 The first argument of parse() is the executed Cisco IOS command.
 Required for the parser to select the format.
 
-``` php
+```php
 $result = $parser->parse(
                 "executed command",
                 "response text"
